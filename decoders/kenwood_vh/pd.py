@@ -17,6 +17,17 @@
 ## along with this program; if not, see <http://www.gnu.org/licenses/>.
 ##
 
+##
+## Short summary of the protocol and the algorithm:
+## - Two lines, DATA and ACTIVE. ACTIVE is not used since DATA alone is enough
+## - Data packets start with DATA line being HIGH for 5ms (= RESET)
+## - Every reset is followed by 16 bit of payload
+## - DATA line is return-to-zero, bit values are determined by length of the 
+##   LOW state. HIGH state is always 2ms (expect RESET, see above)
+## - ARBITRARY definition: LOW for 2ms => 0, LOW for 5ms => 1
+## - To decode bits, we only have a look at the times between two FALLING edges
+##
+
 import sigrokdecode as srd
 
 class Decoder(srd.Decoder):
@@ -68,14 +79,19 @@ class Decoder(srd.Decoder):
 
     def metadata(self, key, value):
         if key == srd.SRD_CONF_SAMPLERATE:
-            self.samplerate = value
             self.sample_usec = 1 / value * 1000000
+
+    def contentToDescription(self, content):
+        return {
+            0x1000: 'System ON',		# From amp
+            0x1080: 'System OFF',		# From amp
+        }.get(content, '????')			# ???? is default if content didn't match
 
     def putr(self, data):
         self.put(self.run_start, self.samplenum, self.out_ann, data)
 
     def decode(self):
-        if not self.samplerate:
+        if not self.sample_usec:
             raise SamplerateError('Cannot decode without samplerate.')
 
         while True:
@@ -115,4 +131,5 @@ class Decoder(srd.Decoder):
                 # If we have one word decoded, emit it and go back to FIND RESET state
                 if (self.num_bits == 16):
                     self.put(self.wordStart, self.lastFalling, self.out_ann, [1, [format(self.content, '#06x')]])
+                    self.put(self.commandStart, self.lastFalling, self.out_ann, [2, [self.contentToDescription(self.content)]])
                     self.state = 'FIND RESET'
