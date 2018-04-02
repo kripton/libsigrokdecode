@@ -83,8 +83,53 @@ class Decoder(srd.Decoder):
 
     def contentToDescription(self, content):
         return {
+            ## Power related messages
             0x1000: 'System ON',		# From amp
             0x1080: 'System OFF',		# From amp
+            0x8044: 'Source: CD',		# From amp
+            0x8045: 'CD ON',				# From amp
+            0x8084: 'Source: FM',		# From amp
+            0x8085: 'FM ON',				# From amp
+            0x80a4: 'Source: Tape',	# From amp
+            0x80a5: 'Tape ON',			# From amp to tape				Could also be SOURCE SELECT
+            0x80b4: 'Source: MD',		# From amp
+            0x80b5: 'MD ON',				# From amp to MD					Could also be SOURCE SELECT
+            0x80c4: 'Source: AUX',	# From amp
+            0x80c5: 'AUX ON',				# From amp
+            0x0898: 'ON3',					# From amp (to minidisc?)
+            
+            0x857b: 'Seek Rev',			# From amp
+            0x85fb: 'Seek Fwd',			# From amp
+
+            0x04c9: 'Tape: ACK?',		# From tape
+            
+            0x051b: 'Tape Rev',			# From amp
+            0x059b: 'Tape Fwd',			# From amp
+            0x05bb: 'Tape Stop',		# From amp
+            
+            0x851b: 'MD Play/Pause',# From amp
+            0x859b: 'MD Stop',			# From amp
+            
+            0x8045: 'CD Play/Pause',# From amp
+            0x8044: 'CD Stop',			# From amp
+            
+            0x4590: 'Tape OTE',			# From amp
+            0x0503: 'MD OTE',				# From amp
+
+            ## Keypad
+            0x0581: 'Num 1 down',		# From amp
+            0x0541: 'Num 2 down',		# From amp
+            0x05c1: 'Num 3 down',		# From amp
+            0x0521: 'Num 4 down',		# From amp
+            0x05a1: 'Num 5 down',		# From amp
+            0x0561: 'Num 6 down',		# From amp
+            0x05e1: 'Num 7 down',		# From amp
+            0x0511: 'Num 8 down',		# From amp
+            0x0591: 'Num 9 down',		# From amp
+            0x05b0: 'Num +10 down',	# From amp
+            0x0501: 'Num 0 down',		# From amp
+            0x45f2: 'Num +100 down',# From amp
+            0x8078: 'Button up',		# From amp
         }.get(content, '????')			# ???? is default if content didn't match
 
     def putr(self, data):
